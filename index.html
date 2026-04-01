@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Diario Pasti Mobile</title>
+  <style>
+    :root{
+      --bg:#f3f1eb;
+      --card:#ffffff;
+      --text:#171717;
+      --muted:#6b6b6b;
+      --border:#d8d5ce;
+      --strong:#111111;
+      --danger:#a43737;
+      --shadow:0 8px 24px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      padding-bottom:110px;
+    }
+
+    .wrap{
+      width:min(100%, 760px);
+      margin:0 auto;
+      padding:16px 14px 28px;
+    }
+
+    .top{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:linear-gradient(to bottom, rgba(243,241,235,.97), rgba(243,241,235,.9));
+      backdrop-filter: blur(6px);
+      padding:10px 0 12px;
+      margin-bottom:10px;
+    }
+
+    h1{
+      font-size:1.55rem;
+      line-height:1.1;
+      margin:0 0 10px;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+
+    .date-box{
+      background:var(--card);
+      border:2px solid var(--strong);
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:1rem;
+      font-weight:800;
+      box-shadow:var(--shadow);
+    }
+
+    .meal-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+    }
+
+    .meal-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+
+    .meal-title{
+      margin:0 0 12px;
+      font-size:1.2rem;
+      font-weight:800;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+    }
+
+    .section{
+      margin-top:10px;
+    }
+
+    .section-label{
+      display:block;
+      font-size:.82rem;
+      color:var(--muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin:0 0 8px;
+    }
+
+    .food-rows{
+      display:grid;
+      gap:10px;
+    }
+
+    .food-row{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      padding:10px;
+      border:1px solid #ebe8e2;
+      border-radius:14px;
+      background:#fcfbf8;
+    }
+
+    input, textarea, button{
+      font:inherit;
+    }
+
+    input, textarea{
+      width:100%;
+      border:1.5px solid var(--border);
+      background:white;
+      color:var(--text);
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:16px;
+      outline:none;
+      appearance:none;
+    }
+
+    input:focus, textarea:focus{
+      border-color:#777;
+      box-shadow:0 0 0 3px rgba(0,0,0,.06);
+    }
+
+    textarea{
+      min-height:92px;
+      resize:vertical;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      min-height:48px;
+    }
+
+    .btn-dark{
+      background:var(--strong);
+      color:white;
+    }
+
+    .btn-light{
+      background:#6f6f6f;
+      color:white;
+    }
+
+    .btn-danger{
+      background:var(--danger);
+      color:white;
+    }
+
+    .btn-outline{
+      background:white;
+      color:var(--strong);
+      border:1.5px solid var(--strong);
+    }
+
+    .row-actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+
+    .add-row{
+      margin-top:10px;
+      width:100%;
+    }
+
+    .sticky-actions{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:30;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:linear-gradient(to top, rgba(243,241,235,.98), rgba(243,241,235,.9));
+      backdrop-filter:blur(8px);
+      border-top:1px solid rgba(0,0,0,.08);
+    }
+
+    .sticky-actions-inner{
+      width:min(100%, 760px);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .hint{
+      font-size:.88rem;
+      color:var(--muted);
+      margin:14px 2px 4px;
+      line-height:1.4;
+    }
+
+    @media (min-width:640px){
+      .wrap{padding:20px 18px 30px;}
+      .meal-card{padding:16px;}
+      .food-row{
+        grid-template-columns: minmax(0, 1fr) 170px 140px;
+        align-items:center;
+      }
+      .row-actions{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>Diario Pasti</h1>
+      <div class="date-box" id="todayDate"></div>
+    </div>
+
+    <div class="meal-grid" id="mealGrid"></div>
+
+    <p class="hint">
+      Compili i pasti del giorno, aggiungi note dove servono, poi premi <strong>Salva TXT</strong>.
+      Il file viene scaricato sul telefono o sul computer.
+    </p>
+  </div>
+
+  <div class="sticky-actions">
+    <div class="sticky-actions-inner">
+      <button class="btn btn-dark" id="saveTxtBtn">Salva TXT</button>
+      <button class="btn btn-light" id="clearBtn">Pulisci tutto</button>
+    </div>
+  </div>
+
+  <template id="mealTemplate">
+    <section class="meal-card" data-meal="">
+      <h2 class="meal-title"></h2>
+
+      <div class="section">
+        <span class="section-label">1. Cosa hai mangiato</span>
+        <div class="food-rows"></div>
+        <button type="button" class="btn btn-outline add-row">+ Aggiungi riga</button>
+      </div>
+
+      <div class="section">
+        <span class="section-label">2. Note</span>
+        <textarea placeholder="Scrivi eventuali note..."></textarea>
+      </div>
+    </section>
+  </template>
+
+  <script>
+    const meals = [
+      'Colazione',
+      'Spuntino 1',
+      'Pranzo',
+      'Spuntino 2',
+      'Cena',
+      'Spuntino 3'
+    ];
+
+    const mealGrid = document.getElementById('mealGrid');
+    const mealTemplate = document.getElementById('mealTemplate');
+    const todayDate = document.getElementById('todayDate');
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+
+    todayDate.textContent = `Data: ${formattedDate}`;
+
+    function createFoodRow(foodValue = '', qtyValue = '') {
+      const row = document.createElement('div');
+      row.className = 'food-row';
+      row.innerHTML = `
+        <input type="text" class="food-input" placeholder="Cosa hai mangiato" value="${escapeHtml(foodValue)}">
+        <input type="text" class="qty-input" placeholder="Quantità" value="${escapeHtml(qtyValue)}">
+        <div class="row-actions">
+          <button type="button" class="btn btn-danger remove-btn">Rimuovi</button>
+        </div>
+      `;
+
+      row.querySelector('.remove-btn').addEventListener('click', () => {
+        const container = row.parentElement;
+        if (container.children.length > 1) {
+          row.remove();
+        } else {
+          row.querySelector('.food-input').value = '';
+          row.querySelector('.qty-input').value = '';
+        }
+      });
+
+      return row;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    meals.forEach((mealName) => {
+      const clone = mealTemplate.content.cloneNode(true);
+      const card = clone.querySelector('.meal-card');
+      const title = clone.querySelector('.meal-title');
+      const rowsContainer = clone.querySelector('.food-rows');
+      const addBtn = clone.querySelector('.add-row');
+
+      card.dataset.meal = mealName;
+      title.textContent = mealName;
+
+      rowsContainer.appendChild(createFoodRow());
+      rowsContainer.appendChild(createFoodRow());
+
+      addBtn.addEventListener('click', () => {
+        rowsContainer.appendChild(createFoodRow());
+      });
+
+      mealGrid.appendChild(clone);
+    });
+
+    document.getElementById('saveTxtBtn').addEventListener('click', () => {
+      const cards = document.querySelectorAll('.meal-card');
+      let output = `DIARIO PASTI\nData: ${formattedDate}\n\n`;
+
+      cards.forEach((card) => {
+        const mealName = card.dataset.meal;
+        const rows = card.querySelectorAll('.food-row');
+        const notes = card.querySelector('textarea').value.trim();
+
+        output += `${mealName.toUpperCase()}\n`;
+        output += `1. Cosa hai mangiato:\n`;
+
+        let hasFood = false;
+        rows.forEach((row) => {
+          const food = row.querySelector('.food-input').value.trim();
+          const qty = row.querySelector('.qty-input').value.trim();
+          if (food || qty) {
+            hasFood = true;
+            output += `- ${food || '(vuoto)'} | Quantità: ${qty || '(vuoto)'}\n`;
+          }
+        });
+
+        if (!hasFood) {
+          output += `- Nessun dato inserito\n`;
+        }
+
+        output += `2. Note:\n${notes || 'Nessuna nota'}\n\n`;
+      });
+
+      const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const fileDate = now.toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `diario-pasti-${fileDate}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      const confirmClear = confirm('Vuoi davvero cancellare tutto?');
+      if (!confirmClear) return;
+
+      document.querySelectorAll('.meal-card').forEach((card) => {
+        const rowsContainer = card.querySelector('.food-rows');
+        rowsContainer.innerHTML = '';
+        rowsContainer.appendChild(createFoodRow());
+        rowsContainer.appendChild(createFoodRow());
+        card.querySelector('textarea').value = '';
+      });
+    });
+  </script>
+</body>
+</html>
